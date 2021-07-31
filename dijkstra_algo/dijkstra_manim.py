@@ -33,7 +33,7 @@ class DijkstraAnimation(Scene):
                     edge_cost[(row_ind, col_ind)] = val
 
         # Graph
-        g = Graph(vertices=vertices, edges=edges, layout="spring", labels=False).scale(1.65)
+        g = Graph(vertices=vertices, edges=edges, layout="spring", labels=True).scale(1.0)
         # self.add(g)
         self.play(Create(g), run_time=5)
 
@@ -46,36 +46,31 @@ class DijkstraAnimation(Scene):
                   g[5].animate.move_to([3, -2, 0]),
                   g[6].animate.move_to([0, -2, 0]),
                   g[7].animate.move_to([-3, -2, 0]),
-                  g[8].animate.move_to([0, 0, 0]))
+                  g[8].animate.move_to([-1, 0, 0]))
 
         vertex_text_alignment = {
-            0: LEFT,
-            1: UP,
-            2: UP,
-            3: UP,
-            4: RIGHT,
-            5: DOWN,
-            6: DOWN,
-            7: DOWN,
-            8: RIGHT
+            0: 1.1*LEFT,
+            1: 2*UP,
+            2: 2*UP,
+            3: 2*UP,
+            4: 1.1*RIGHT,
+            5: 1.1*DOWN,
+            6: 1.1*DOWN,
+            7: 1.1*DOWN,
+            8: 1.1*RIGHT
         }
 
-        # Vertex label
-        for ind, v in enumerate(vertices):
-            t = Text(str(v), color=YELLOW).scale(1).next_to(g[ind].get_bottom(), vertex_text_alignment[ind])
-            self.add(t)
-
         # Edge cost
-        for ind, edge in enumerate(edges):
+        for _, edge in enumerate(edges):
             offset = np.array((0.0, 0.0, 0.0))
-            if (vertex_text_alignment[edge[0]] == LEFT).all():
-                offset = LEFT + UP
-            elif (vertex_text_alignment[edge[0]] == UP).all():
-                offset = UP
-            elif (vertex_text_alignment[edge[0]] == RIGHT).all():
-                offset = DOWN
-            elif (vertex_text_alignment[edge[0]] == DOWN).all():
-                offset = DOWN
+            if (vertex_text_alignment[edge[0]] == 1.1*LEFT).all():
+                offset = 1.3 * (LEFT + UP)
+            elif (vertex_text_alignment[edge[0]] == 2*UP).all():
+                offset = 1.3 * (UP)
+            elif (vertex_text_alignment[edge[0]] == 1.1*RIGHT).all():
+                offset = 1.3 * (DOWN)
+            elif (vertex_text_alignment[edge[0]] == 1.1*DOWN).all():
+                offset = 1.3 * (DOWN)
             t = Text(str(edge_cost[edge]), color=ORANGE).scale(0.75).next_to(g.edges[edge].get_edge_center(ORIGIN), ORIGIN + offset)
             self.add(t)
 
@@ -84,26 +79,25 @@ class DijkstraAnimation(Scene):
         current_ind, prev_ind, current_cost = start_ind, -1, 0
         next_step = True
         spt = {}
+        self.add(Text(str(current_cost), color=YELLOW).scale(1).next_to(g[current_ind].get_bottom(), vertex_text_alignment[current_ind]))
 
         while next_step:
             next_step, current_ind, prev_ind, current_cost, buffer, spt = dij.find_shortest_path_in_steps(current_ind, prev_ind, current_cost)
+            self.add(Text(str(current_cost), color=YELLOW).scale(1).next_to(g[current_ind].get_bottom(), vertex_text_alignment[current_ind]))
             for edge in edges:
                 g.add_edges(*[edge],
                         edge_config= {
                             edge: {"stroke_color": WHITE}
                         })
             for key in buffer:
-                g[key].set_color(RED)
                 edge = (buffer[key]["prev_ind"], key)
                 g.add_edges(*[edge],
                         edge_config= {
                             edge: {"stroke_color": RED}
                         })
             for key in spt:
-                g[key].set_color(GREEN)
                 if spt[key]["prev_ind"] == -1:
                     continue
-                g[spt[key]["prev_ind"]].set_color(GREEN)
                 edge = (spt[key]["prev_ind"], key)
                 g.add_edges(*[edge],
                         edge_config= {
@@ -118,23 +112,21 @@ class DijkstraAnimation(Scene):
             end_ind_ = prev_ind
             if prev_ind == start_ind:
                 break
-        for v in vertices:
-            g[v].set_color(WHITE)
+        # for v in vertices:
+        #     g[v].set_color(WHITE)
         for edge in edges:
             g.add_edges(*[edge],
                     edge_config= {
                         edge: {"stroke_color": WHITE}
                     })
-        self.wait(3)
+        self.wait(2)
         for edge in shortest_path:
-            self.wait(1)
-            g[edge[0]].set_color(GREEN)
-            g[edge[1]].set_color(GREEN)
+            self.wait(0.5)
             g.add_edges(*[edge],
                         edge_config= {
                             edge: {"stroke_color": GREEN}
                         })
-        self.wait()
+        self.wait(3)
 
 
 class MovingVertices(Scene):

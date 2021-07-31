@@ -3,6 +3,7 @@
 ## Install manim
 
 ```bash
+sudo apt install texlive-full
 sudo pip3 install manim
 ```
 
@@ -21,3 +22,7 @@ manim -pql dijkstra_manim.py MovingVertices
 ```bash
 manim -pql dijkstra_manim.py DijkstraAnimation
 ```
+
+## Final output
+
+![manim video](./DijkstraAnimation.gif)
