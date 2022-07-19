@@ -1,10 +1,10 @@
+"""
+Hackerrank Link: https://hr.gs/bbddc
+"""
+
 #!/bin/python3
 
-import math
 import os
-import random
-import re
-import sys
 
 #
 # Complete the 'quickestWayUp' function below.
@@ -51,42 +51,62 @@ def get_cost_to_point_using_snake(start_point, end_point, snakes):
     return lowest_roll
 
 
-def quickestWayUp(ladders, snakes):
-    # Write your code here
-    # print(ladders)
-    # print(snakes)
-    ladder_actual_reward = []
-    best_first_ladder_ind = -1
-    best_first_ladder_reward = 0
-    total_cost = -1
-    higher_ladder_end_ind = []
+def get_reward(start_point, ladder, snakes):
+    cost_to_ladder_start = get_cost_to_point(start_point, ladder[0], snakes)
+    ladder_reward = (ladder[1] - ladder[0]) / 6.0
+    reward = ladder_reward - cost_to_ladder_start
+    return reward
+
+
+def get_the_next_ladder(ladders, start_point, snakes):
+    # end_point = start_point
     chosen_ladders = []
+    best_ladder_reward = 0
+    best_ladder_ind = -1
+    best_ladder_rolls = 0
     for ind, lad in enumerate(ladders):
-        # print(get_cost_to_point(1, lad[0], snakes), lad[0])
-        cost_to_ladder_start = get_cost_to_point(1, lad[0], snakes)
-        ladder_reward = (lad[1] - lad[0]) / 6.0
-        tmp = ladder_reward - cost_to_ladder_start
-        ladder_actual_reward.append(tmp)
-        if tmp > best_first_ladder_reward:
-            best_first_ladder_reward = tmp
-            best_first_ladder_ind = ind
-            total_cost = cost_to_ladder_start
-    chosen_ladders.append(ladders[best_first_ladder_ind])
-    
-    for ind, lad in enumerate(ladders):
-        if lad[1] > ladders[best_first_ladder_ind][1]:
-            higher_ladder_end_ind.append(ind)
+        current_reward = 0
+        if lad[1] > start_point:
             # Number of rolls to reach the end point on dice rolls
-            num_of_direct_rolls = get_cost_to_point(ladders[best_first_ladder_ind][1], lad[1], snakes)
+            num_of_direct_rolls = get_cost_to_point(start_point, lad[1], snakes)
             # Number of rolls to reach the end point on dice rolls + ladder
-            num_of_rolls_with_ladder = get_cost_to_point_using_snake(ladders[best_first_ladder_ind][1], lad[0], snakes)
+            num_of_rolls_with_ladder = get_cost_to_point_using_snake(start_point, lad[0], snakes)
             if num_of_direct_rolls > num_of_rolls_with_ladder:
-                pass
+                chosen_ladders.append(lad)
+                current_reward = get_reward(start_point, lad, snakes)
+                if current_reward > best_ladder_reward:
+                    best_ladder_reward = current_reward
+                    best_ladder_ind = ind
+                    best_ladder_rolls = num_of_rolls_with_ladder
+    return best_ladder_ind, best_ladder_rolls
+
+
+def quickestWayUp(ladders, snakes):
+    start_point = 1
+    chosen_ladders = []
+    total_rolls = 0
+    while True:
+        next_ladder_ind, curr_rolls = get_the_next_ladder(ladders, start_point, snakes)
+        total_rolls += curr_rolls
+        if next_ladder_ind == -1:
+            break
+        chosen_ladders.append(ladders[next_ladder_ind])
+        start_point = ladders[next_ladder_ind][1]
+        if (100 - start_point) <= 6:
+            break
+        ladders.pop(next_ladder_ind)
+    total_rolls += get_cost_to_point_using_snake(start_point, 100, snakes)
+    # start_point = 1
+    # for lad in chosen_ladders:
+    #     total_rolls += get_cost_to_point_using_snake(start_point, lad[0], snakes)
+    #     start_point = lad[1]
+    return total_rolls
 
 
 if __name__ == '__main__':
     # fptr = open(os.environ['OUTPUT_PATH'], 'w')
 
+    # uncomment statements with input() to take user input
     # t = int(input().strip())
     t = 1
 
